@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart'; 
+import 'login_page.dart';
+import '../services/auth_service.dart';
+import '../services/auth_prefs.dart';
 
-class LogoutPage extends StatelessWidget {
+class LogoutPage extends StatefulWidget {
   const LogoutPage({super.key});
+
+  @override
+  State<LogoutPage> createState() => _LogoutPageState();
+}
+
+class _LogoutPageState extends State<LogoutPage> {
+  String username = "";
+  String email = "";
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final savedEmail = await AuthPrefs.getEmail();
+
+    setState(() {
+      email = savedEmail ?? "";
+      username = email.split("@")[0]; 
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +55,17 @@ class LogoutPage extends StatelessWidget {
             backgroundImage: AssetImage('assets/images/imagespp.png'),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Nichi Putra Lin',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
+          Text(
+            username,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const Text(
-            'nichi@mail.com',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+
+          Text(
+            email,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
+
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -47,13 +75,14 @@ class LogoutPage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF6A5AE0), // Ungu terang
+                      backgroundColor: const Color(0xFF6A5AE0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      await AuthService().logout();
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -78,7 +107,7 @@ class LogoutPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () {
-                      Navigator.pop(context); // Kembali ke sebelumnya
+                      Navigator.pop(context);
                     },
                     child: const Text(
                       'Cancel',

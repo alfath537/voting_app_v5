@@ -45,7 +45,6 @@ class ShareMoviePage extends StatelessWidget {
   Widget _buildShareOption(IconData icon, String label) {
     return GestureDetector(
       onTap: () {
-        // TODO: Tambahkan fungsi berbagi sesuai platform
         debugPrint('Clicked $label');
       },
       child: Column(

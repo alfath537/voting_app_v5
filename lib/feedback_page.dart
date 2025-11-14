@@ -1,137 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
-class FeedbackBackend {
-  static final List<Map<String, dynamic>> _feedbacks = [];
-
-  static void addFeedback(String feedback, double rating) {
-    _feedbacks.add({
-      'feedback': feedback,
-      'rating': rating,
-      'timestamp': DateTime.now(),
-    });
-  }
-
-  static List<Map<String, dynamic>> getAllFeedbacks() => _feedbacks;
-}
+import '../services/dummy_api.dart';
+import '../services/vote_db.dart';
+import '../models/feedback_model.dart';
 
 class FeedbackPage extends StatefulWidget {
   const FeedbackPage({super.key});
-
   @override
   State<FeedbackPage> createState() => _FeedbackPageState();
 }
 
 class _FeedbackPageState extends State<FeedbackPage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _feedbackController = TextEditingController();
+  final _ctrl = TextEditingController();
   double _rating = 0.0;
+  bool _busy = false;
 
   @override
   void dispose() {
-    _feedbackController.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
-  void _submitFeedback() {
-    if (_rating == 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please give a rating before submitting')),
-      );
+  Future<void> _submit() async {
+    if (_rating == 0 || _ctrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter feedback and rating')));
       return;
     }
+    setState(() => _busy = true);
 
-    if (_formKey.currentState!.validate()) {
-      final feedback = _feedbackController.text;
-      FeedbackBackend.addFeedback(feedback, _rating); 
-      _showThankYouDialog(feedback);
+    final success = await DummyAPI.submitFeedback(_ctrl.text.trim(), _rating);
+    if (success) {
+      final f = FeedbackModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        feedback: _ctrl.text.trim(),
+        rating: _rating,
+        userId: null,
+        timestamp: DateTime.now().toIso8601String(),
+      );
+      await VoteDB.insertFeedback(f);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Feedback submitted')));
+      _ctrl.clear();
+      setState(() => _rating = 0.0);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Submit failed')));
     }
-  }
 
-  void _showThankYouDialog(String feedback) {
-    final currentRating = _rating;
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Thank you!'),
-        content: Text('Rating: $currentRating\nFeedback: $feedback'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _feedbackController.clear();
-              setState(() => _rating = 0.0);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    setState(() => _busy = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Feedback'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Feedback')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: RatingBar.builder(
-                  initialRating: _rating,
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: true,
-                  itemCount: 5,
-                  itemSize: 40,
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                  ),
-                  onRatingUpdate: (rating) {
-                    setState(() => _rating = rating);
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _feedbackController,
-                decoration: const InputDecoration(
-                  labelText: 'Type your feedback',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your feedback';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitFeedback,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: const Text(
-                  'Submit',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            RatingBar.builder(
+              initialRating: 0,
+              minRating: 1,
+              allowHalfRating: true,
+              itemCount: 5,
+              itemSize: 40,
+              itemBuilder: (c,i) => const Icon(Icons.star, color: Colors.amber),
+              onRatingUpdate: (r) => setState(() => _rating = r),
+            ),
+            const SizedBox(height: 24),
+            TextField(controller: _ctrl, maxLines: 4, decoration: const InputDecoration(labelText: 'Type your feedback', border: OutlineInputBorder())),
+            const SizedBox(height: 24),
+            ElevatedButton(onPressed: _busy ? null : _submit, child: _busy ? const CircularProgressIndicator() : const Text('Submit')),
+          ],
         ),
       ),
     );

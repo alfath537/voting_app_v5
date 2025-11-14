@@ -1,12 +1,110 @@
 import 'package:flutter/material.dart';
+import '../services/search_db.dart';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController searchController = TextEditingController();
+  State<SearchPage> createState() => _SearchPageState();
+}
 
+class _SearchPageState extends State<SearchPage> {
+  final TextEditingController searchController = TextEditingController();
+  late Future<List<Map<String, dynamic>>> _historyFuture;
+
+
+  final List<Map<String, String>> trendingTopics = [
+    {
+      "title": "Best Movie 2023",
+      "subtitle": "Vote for your favorite",
+      "image": "assets/images/images.jpg"
+    },
+    {
+      "title": "Tech Innovations",
+      "subtitle": "Leading the future",
+      "image": "assets/images/images1.jpg"
+    },
+    {
+      "title": "Top Anime 2023",
+      "subtitle": "Pick your winner",
+      "image": "assets/images/images.jpg"
+    },
+  ];
+
+  final List<Map<String, String>> leadingOptions = [
+    {
+      "title": "Movie A",
+      "subtitle": "45% of votes",
+      "image": "assets/images/images.jpg"
+    },
+    {
+      "title": "Movie B",
+      "subtitle": "40% of votes",
+      "image": "assets/images/images1.jpg"
+    },
+    {
+      "title": "Movie C",
+      "subtitle": "15% of votes",
+      "image": "assets/images/images.jpg"
+    },
+  ];
+
+  List<Map<String, String>> filteredTrending = [];
+  List<Map<String, String>> filteredLeading = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _historyFuture = SearchDB.getHistory();
+
+    filteredTrending = List.from(trendingTopics);
+    filteredLeading = List.from(leadingOptions);
+
+    searchController.addListener(_filterContent);
+  }
+
+  void _filterContent() {
+    final key = searchController.text.toLowerCase();
+
+    setState(() {
+      if (key.isEmpty) {
+        filteredTrending = List.from(trendingTopics);
+        filteredLeading = List.from(leadingOptions);
+      } else {
+        filteredTrending = trendingTopics
+            .where((item) =>
+                item["title"]!.toLowerCase().contains(key) ||
+                item["subtitle"]!.toLowerCase().contains(key))
+            .toList();
+
+        filteredLeading = leadingOptions
+            .where((item) =>
+                item["title"]!.toLowerCase().contains(key) ||
+                item["subtitle"]!.toLowerCase().contains(key))
+            .toList();
+      }
+    });
+  }
+  Future<void> _doSearch(String q) async {
+    final query = q.trim();
+    if (query.isEmpty) return;
+
+    await SearchDB.insertHistory(query);
+    setState(() {
+      _historyFuture = SearchDB.getHistory();
+    });
+  }
+
+  Future<void> _clearHistory() async {
+    await SearchDB.clearHistory();
+    setState(() {
+      _historyFuture = SearchDB.getHistory();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -15,9 +113,8 @@ class SearchPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title
                 const Text(
-                  "Search Results",
+                  "Search",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -26,7 +123,6 @@ class SearchPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Search Bar as TextField
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -35,19 +131,66 @@ class SearchPage extends StatelessWidget {
                   ),
                   child: TextField(
                     controller: searchController,
+                    textInputAction: TextInputAction.search,
                     decoration: const InputDecoration(
                       icon: Icon(Icons.search, color: Colors.grey),
                       hintText: "Search",
                       border: InputBorder.none,
                     ),
-                    onChanged: (value) {
-                      // TODO: Implement search logic here
-                    },
+                    onSubmitted: (value) => _doSearch(value),
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Trending Topics
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Riwayat Pencarian",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'PTSerif',
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _clearHistory,
+                      child: const Text("Clear"),
+                    ),
+                  ],
+                ),
+
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _historyFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                          height: 60,
+                          child: Center(child: CircularProgressIndicator()));
+                    }
+
+                    final data = snapshot.data ?? [];
+
+                    if (data.isEmpty) {
+                      return const Text("Belum ada riwayat.");
+                    }
+
+                    return Column(
+                      children: data.map((row) {
+                        return ListTile(
+                          leading: const Icon(Icons.history),
+                          title: Text(row['query'] ?? ''),
+                          onTap: () {
+                            searchController.text = row['query'] ?? '';
+                          },
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
                 const Text(
                   "Trending Topics",
                   style: TextStyle(
@@ -57,27 +200,22 @@ class SearchPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+
                 SizedBox(
                   height: 180,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    children: const [
-                      TrendingCard(
-                        image: 'assets/images/images.jpg',
-                        title: "Best Movie 2023",
-                        subtitle: "Vote for your favorite",
-                      ),
-                      TrendingCard(
-                        image: 'assets/images/images1.jpg',
-                        title: "Tech Innovations",
-                        subtitle: "Leading the future",
-                      ),
-                    ],
+                    children: filteredTrending.map((item) {
+                      return TrendingCard(
+                        image: item["image"]!,
+                        title: item["title"]!,
+                        subtitle: item["subtitle"]!,
+                      );
+                    }).toList(),
                   ),
                 ),
-                const SizedBox(height: 24),
 
-                // Leading Options
+                const SizedBox(height: 24),
                 const Text(
                   "Leading Options",
                   style: TextStyle(
@@ -87,20 +225,15 @@ class SearchPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const LeadingOption(
-                  image: 'assets/images/images.jpg',
-                  title: "Movie A",
-                  subtitle: "45% of votes",
-                ),
-                const LeadingOption(
-                  image: 'assets/images/images1.jpg',
-                  title: "Movie B",
-                  subtitle: "40% of votes",
-                ),
-                const LeadingOption(
-                  image: 'assets/images/images.jpg',
-                  title: "Movie C",
-                  subtitle: "15% of votes",
+
+                Column(
+                  children: filteredLeading.map((item) {
+                    return LeadingOption(
+                      image: item["image"]!,
+                      title: item["title"]!,
+                      subtitle: item["subtitle"]!,
+                    );
+                  }).toList(),
                 ),
               ],
             ),
@@ -139,7 +272,10 @@ class TrendingCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           gradient: LinearGradient(
-            colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+            colors: [
+              Colors.black.withOpacity(0.6),
+              Colors.transparent,
+            ],
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
           ),
@@ -198,7 +334,10 @@ class LeadingOption extends StatelessWidget {
           fontFamily: 'PTSerif',
         ),
       ),
-      subtitle: Text(subtitle, style: const TextStyle(fontFamily: 'PTSerif')),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontFamily: 'PTSerif'),
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_prefs.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -8,19 +9,33 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final TextEditingController _nameController =
-      TextEditingController(text: 'Nichi Putra Lin');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'nichi@mail.com');
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   String _profileImage = 'assets/images/imagespp.png';
 
   @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final email = await AuthPrefs.getEmail();
+
+    setState(() {
+      _emailController.text = email ?? "";
+      _nameController.text =
+          (email != null)
+              ? email.split("@")[0] 
+              : "Unknown";
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
-      ),
+      appBar: AppBar(title: const Text('Edit Profile')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -38,7 +53,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   right: 4,
                   child: GestureDetector(
                     onTap: () {
-                      // Fungsi ganti foto profil 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Fitur ganti foto belum tersedia."),
@@ -54,9 +68,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ],
             ),
+
             const SizedBox(height: 24),
 
-            // Name input
+            // Name input (mengikuti email)
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -65,6 +80,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 border: OutlineInputBorder(),
               ),
             ),
+
             const SizedBox(height: 16),
 
             // Email input
@@ -77,31 +93,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               keyboardType: TextInputType.emailAddress,
             ),
+
             const SizedBox(height: 32),
 
-            // Save button
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
               icon: const Icon(Icons.save),
               label: const Text("Save Changes"),
-              onPressed: () {
-                final name = _nameController.text.trim();
-                final email = _emailController.text.trim();
+              onPressed: () async {
+                final newEmail = _emailController.text.trim();
 
-                if (name.isEmpty || email.isEmpty) {
+                if (newEmail.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Data tidak boleh kosong.")),
+                    const SnackBar(content: Text("Email tidak boleh kosong.")),
                   );
                   return;
                 }
-                print("Updated Name: $name");
-                print("Updated Email: $email");
+
+                await AuthPrefs.saveLogin(newEmail);
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Profile updated successfully.")),
+                  const SnackBar(
+                    content: Text("Profile updated successfully."),
+                  ),
                 );
+
                 Navigator.pop(context);
               },
             ),

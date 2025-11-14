@@ -1,0 +1,50 @@
+[
+  {
+    "id": "mean_girls",
+    "title": "Mean Girls",
+    "description": "Remake modern dari kisah klasik tentang dinamika sosial di sekolah.",
+    "poster": "https://image.tmdb.org/t/p/w500/5YZbUmjbMa3ClvSW1Wj3D6XGolb.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  },
+  {
+    "id": "dune2",
+    "title": "Dune: Part Two",
+    "description": "Kelanjutan perjalanan Paul Atreides di Arrakis.",
+    "poster": "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0G3ix.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  },
+  {
+    "id": "insideout2",
+    "title": "Inside Out 2",
+    "description": "Petualangan baru emosi Riley saat ia tumbuh remaja.",
+    "poster": "https://image.tmdb.org/t/p/w500/ktuPo7PhJPeHS6TAYymR3UOCl7e.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  },
+  {
+    "id": "if_movie",
+    "title": "IF",
+    "description": "Gadis kecil yang bisa melihat teman imajiner orang lain.",
+    "poster": "https://image.tmdb.org/t/p/w500/xbKFv4KF3sVYuWKllLlwWDmuZi.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  },
+  {
+    "id": "marmalade",
+    "title": "Marmalade",
+    "description": "Drama kriminal dan romansa yang memicu pelarian.",
+    "poster": "https://image.tmdb.org/t/p/w500/7zV8xLpWrVdKjG6dpDOa1UBDI4n.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  },
+  {
+    "id": "argylle",
+    "title": "Argylle",
+    "description": "Penulis novel mata-mata hidupnya berubah jadi nyata.",
+    "poster": "https://image.tmdb.org/t/p/w500/95VlSEfLMYxKoPqkSPqhZKMH95s.jpg",
+    "totalVotes": 0,
+    "createdAt": "2025-11-14T00:00:00Z"
+  }
+]

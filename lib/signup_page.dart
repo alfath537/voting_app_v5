@@ -37,7 +37,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     try {
-      // Daftar akun baru
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -47,7 +46,6 @@ class _SignUpPageState extends State<SignUpPage> {
         const SnackBar(content: Text("Account created successfully!")),
       );
 
-      // Setelah berhasil daftar → arahkan ke halaman login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -61,7 +59,8 @@ class _SignUpPageState extends State<SignUpPage> {
       } else if (e.code == 'weak-password') {
         message = "Password is too weak.";
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -138,8 +137,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 onPressed: _signUp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 100, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 100, vertical: 14),
                 ),
                 child: const Text(
                   "Sign Up",

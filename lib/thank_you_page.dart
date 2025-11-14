@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:voting_app/feedback_page.dart';
-import 'package:voting_app/share_movie_page.dart';
-import 'package:voting_app/view_results_page.dart';
-import 'home_page.dart';
 import 'movie_vote_page.dart';
-import 'invite_friend_page.dart';
+import 'view_results_page.dart';
+import 'share_movie_page.dart';
+import 'feedback_page.dart';
 
 class ThankYouPage extends StatelessWidget {
-  const ThankYouPage({super.key});
+  final String title;
+  final String imagePath;
+
+  const ThankYouPage({
+    super.key,
+    required this.title,
+    required this.imagePath,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.home, size: 20),
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(actions: [
+        IconButton(
+          icon: const Icon(Icons.home),
+          onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
+        )
+      ]),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -39,46 +36,33 @@ class ThankYouPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+
+          /// --- FIX UTAMA di sini ---
           Expanded(
             child: Image.asset(
-              'assets/images/mean_girls.jpg',
+              imagePath,
               fit: BoxFit.cover,
             ),
           ),
+
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MovieVotePage()),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MovieVotePage()),
-                  );
-                },
-                child: const Text("Vote Again"),
+                child: const Text('Vote Again'),
               ),
               OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ViewResultsPage()),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ViewResultsPage()),
-                  );
-                },
-                child: const Text("View Results"),
+                child: const Text('View Results'),
               ),
             ],
           ),
@@ -89,12 +73,10 @@ class ThankYouPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ShareMoviePage()),
-                    );
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ShareMoviePage()),
+                  ),
                   child: Column(
                     children: const [
                       Icon(Icons.share, size: 30),
@@ -104,14 +86,7 @@ class ThankYouPage extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const InviteFriendPage(),
-                      ),
-                    );
-                  },
+                  onTap: () {},
                   child: Column(
                     children: const [
                       Icon(Icons.person_add, size: 30),
@@ -121,12 +96,10 @@ class ThankYouPage extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const FeedbackPage()),
-                    );
-                  },
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FeedbackPage()),
+                  ),
                   child: Column(
                     children: const [
                       Icon(Icons.feedback, size: 30),

@@ -3,6 +3,9 @@ import 'edit_profile_page.dart';
 import 'settings_page.dart';
 import 'history_page.dart';
 import 'achievements_page.dart';
+import '../services/auth_prefs.dart';
+import 'logout_page.dart';
+import '../services/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,6 +15,28 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String displayName = "Nichi Putra Lin";
+  String email = "nichi@mail.com";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final e = await AuthPrefs.getEmail();
+    if (e != null && e.isNotEmpty) {
+      final name = e.split('@')[0];
+      if (mounted) {
+        setState(() {
+          displayName = name;
+          email = e;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,17 +80,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          "Nichi Putra Lin",
-                          style: TextStyle(
+                          displayName,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
                         Text(
-                          "IT Manager",
-                          style: TextStyle(color: Colors.grey),
+                          email,
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -145,30 +170,54 @@ class _ProfilePageState extends State<ProfilePage> {
 
               const Spacer(),
 
-              // Edit Profile Button
+              // Edit Profile & Logout Buttons
               Center(
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const EditProfilePage(),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EditProfilePage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurpleAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurpleAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        child: const Text(
+                          "Edit Profile",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      "Edit Profile",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LogoutPage()),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: Colors.redAccent),
+                          ),
+                          child: const Text(
+                            "Log Out",
+                            style: TextStyle(fontSize: 16, color: Colors.redAccent),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

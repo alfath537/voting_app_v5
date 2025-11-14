@@ -6,13 +6,14 @@ import 'movie_vote_page.dart';
 import 'invite_friend_page.dart';
 import 'notifications_page.dart';
 
-// Import halaman kategori
 import 'politics_page.dart';
 import 'entertainment_page.dart';
 import 'tvshows_page.dart';
 import 'technology_page.dart';
 import 'health_page.dart';
 import 'education_page.dart';
+
+import '../services/auth_prefs.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,12 +24,13 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  final pages = const [
-    HomeContent(),
-    SearchPage(),
-    SavedPage(),
-    ProfilePage(),
-  ];
+  final pages = <Widget>[]; 
+
+  @override
+  void initState() {
+    super.initState();
+    pages.addAll(const [HomeContent(), SearchPage(), SavedPage(), ProfilePage()]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +52,33 @@ class HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  String username = "Nichi"; 
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final email = await AuthPrefs.getEmail();
+    if (email != null && email.isNotEmpty) {
+      final name = email.split('@')[0];
+      if (mounted) {
+        setState(() {
+          username = name;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,15 +94,17 @@ class HomeContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    children: const [
-                      CircleAvatar(
-                        backgroundImage: AssetImage('assets/images/imagespp.png'),
+                    children: [
+                      const CircleAvatar(
+                        backgroundImage: AssetImage(
+                          'assets/images/imagespp.png',
+                        ),
                         radius: 20,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Text(
-                        "Hi, Nichi 👋",
-                        style: TextStyle(
+                        "Hi, $username 👋",
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'PTSerif',
@@ -88,7 +117,9 @@ class HomeContent extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const NotificationPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationPage(),
+                        ),
                       );
                     },
                   ),
@@ -106,16 +137,19 @@ class HomeContent extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Search Bar 
+              // Search Bar
               GestureDetector(
                 onTap: () {
                   final homeState = context.findAncestorStateOfType<HomePageState>();
                   homeState?.setState(() {
-                    homeState.selectedIndex = 1; 
+                    homeState.selectedIndex = 1;
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(30),
@@ -151,17 +185,47 @@ class HomeContent extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: const [
-                    CategoryChip(label: 'Politics', icon: Icons.account_balance, page: PoliticsPage(), color: Colors.blue),
+                    CategoryChip(
+                      label: 'Politics',
+                      icon: Icons.account_balance,
+                      page: PoliticsPage(),
+                      color: Colors.blue,
+                    ),
                     SizedBox(width: 8),
-                    CategoryChip(label: 'Entertainment', icon: Icons.movie, page: EntertainmentPage(), color: Colors.purple),
+                    CategoryChip(
+                      label: 'Entertainment',
+                      icon: Icons.movie,
+                      page: EntertainmentPage(),
+                      color: Colors.purple,
+                    ),
                     SizedBox(width: 8),
-                    CategoryChip(label: 'TV Shows', icon: Icons.tv, page: TopTVShowsPage(), color: Colors.teal),
+                    CategoryChip(
+                      label: 'TV Shows',
+                      icon: Icons.tv,
+                      page: TopTVShowsPage(),
+                      color: Colors.teal,
+                    ),
                     SizedBox(width: 8),
-                    CategoryChip(label: 'Technology', icon: Icons.devices, page: TechnologyPage(), color: Colors.orange),
+                    CategoryChip(
+                      label: 'Technology',
+                      icon: Icons.devices,
+                      page: TechnologyPage(),
+                      color: Colors.orange,
+                    ),
                     SizedBox(width: 8),
-                    CategoryChip(label: 'Health', icon: Icons.health_and_safety, page: HealthPage(), color: Colors.green),
+                    CategoryChip(
+                      label: 'Health',
+                      icon: Icons.health_and_safety,
+                      page: HealthPage(),
+                      color: Colors.green,
+                    ),
                     SizedBox(width: 8),
-                    CategoryChip(label: 'Education', icon: Icons.school, page: EducationPage(), color: Colors.redAccent),
+                    CategoryChip(
+                      label: 'Education',
+                      icon: Icons.school,
+                      page: EducationPage(),
+                      color: Colors.redAccent,
+                    ),
                   ],
                 ),
               ),
@@ -191,7 +255,9 @@ class HomeContent extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const MovieVotePage()),
+                          MaterialPageRoute(
+                            builder: (context) => const MovieVotePage(),
+                          ),
                         );
                       },
                     ),
@@ -212,16 +278,23 @@ class HomeContent extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.person_add),
-                  label: const Text('Invite Friends', style: TextStyle(fontFamily: 'PTSerif')),
+                  label: const Text(
+                    'Invite Friends',
+                    style: TextStyle(fontFamily: 'PTSerif'),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const InviteFriendPage()),
+                      MaterialPageRoute(
+                        builder: (context) => const InviteFriendPage(),
+                      ),
                     );
                   },
                 ),
@@ -297,7 +370,10 @@ class _PollCardState extends State<PollCard> {
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              image: DecorationImage(image: AssetImage(widget.image), fit: BoxFit.cover),
+              image: DecorationImage(
+                image: AssetImage(widget.image),
+                fit: BoxFit.cover,
+              ),
             ),
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -316,12 +392,18 @@ class _PollCardState extends State<PollCard> {
                 children: [
                   if (widget.isPopular)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text('🔥 Popular', style: TextStyle(color: Colors.white, fontSize: 12)),
+                      child: const Text(
+                        '🔥 Popular',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ),
                   const SizedBox(height: 4),
                   Text(
